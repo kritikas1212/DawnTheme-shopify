@@ -155,6 +155,9 @@ The project code is organized into two files for maintainability and adherence t
 
 .
 ├── sections/
+
 │   └── featured-collection-grid.liquid  # Main section file with schema and layout
+
 └── snippets/
+
 └── product-card-custom.liquid       # Reusable snippet for individual product cards
