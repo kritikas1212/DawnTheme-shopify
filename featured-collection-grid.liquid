@@ -1,0 +1,199 @@
+{% comment %}
+  This section renders a responsive grid of products from a selected collection.
+  It provides extensive customization options through the Shopify theme editor,
+  including collection selection, color choices, padding controls, and more.
+  It uses the 'product-card-custom' snippet to render individual products.
+{% endcomment %}
+
+{% comment %}
+  =====================================================================================
+  1. LIQUID LOGIC & HTML STRUCTURE
+  =====================================================================================
+{% endcomment %}
+
+{%- liquid
+  assign collection = collections[section.settings.collection]
+  assign products_to_show = section.settings.products_to_show
+  assign show_title = section.settings.show_title
+  assign bg_color = section.settings.background_color
+  assign padding_top = section.settings.padding_top
+  assign padding_bottom = section.settings.padding_bottom
+-%}
+
+<div
+  class="featured-collection-grid-section"
+  style="
+    background-color: {{ bg_color }};
+    padding-top: {{ padding_top }}px;
+    padding-bottom: {{ padding_bottom }}px;
+  "
+>
+  <div class="page-width">
+    {% if collection.title != blank %}
+      <h2 class="featured-collection-grid__title h2">{{ collection.title | escape }}</h2>
+    {% else %}
+      <h2 class="featured-collection-grid__title h2">{{ 'onboarding.collection_title' | t }}</h2>
+    {% endif %}
+
+    <div class="featured-collection-grid__container">
+      {%- for product in collection.products limit: products_to_show -%}
+        {% render 'product-card-custom', product: product, show_title: show_title %}
+      {%- else -%}
+        {%- for i in (1..products_to_show) -%}
+          <div class="product-card-placeholder">
+            {%- capture current -%}{% cycle 1, 2, 3, 4, 5, 6 %}{%- endcapture -%}
+            {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+            <div class="placeholder-text">
+              <span class="placeholder-title">{{ 'onboarding.product_title' | t }}</span>
+              <span class="placeholder-price">{{ 1999 | money }}</span>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% comment %}
+  =====================================================================================
+  2. CSS STYLING
+  =====================================================================================
+{% endcomment %}
+
+{% style %}
+  .featured-collection-grid-section {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .featured-collection-grid__title {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .featured-collection-grid__container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* Tablet view: 2 products per row */
+  @media (max-width: 990px) {
+    .featured-collection-grid__container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Mobile view: 1 product per row */
+  @media (max-width: 750px) {
+    .featured-collection-grid__container {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Placeholder styles for onboarding */
+  .product-card-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .product-card-placeholder .placeholder-svg {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+  .placeholder-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .placeholder-title {
+    font-weight: bold;
+  }
+
+{% endstyle %}
+
+{% comment %}
+  =====================================================================================
+  3. SCHEMA SETTINGS
+  =====================================================================================
+{% endcomment %}
+
+{% schema %}
+{
+  "name": "Featured Collection Grid",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Select Collection"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show Product Titles",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "products_to_show",
+      "label": "Number of Products to Display",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "6",
+          "label": "6"
+        },
+        {
+          "value": "9",
+          "label": "9"
+        },
+        {
+          "value": "12",
+          "label": "12"
+        }
+      ],
+      "default": "9"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Collection Grid"
+    }
+  ]
+}
+{% endschema %}
