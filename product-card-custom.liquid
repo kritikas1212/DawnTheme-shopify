@@ -1,0 +1,256 @@
+{% comment %}
+  This snippet renders a single product card with advanced features like
+  image hover effects, dynamic badges, and an 'Add to Cart' form.
+  It is designed to be reusable and is called by the 'featured-collection-grid' section.
+
+  @param {Object} product - The product object to render.
+  @param {Boolean} show_title - Determines if the product title should be displayed.
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.first_available_variant
+  assign featured_media = product.featured_media
+  assign second_media = product.media[1]
+
+  assign current_date = 'now' | date: '%s'
+  assign product_date = product.created_at | date: '%s'
+  assign time_difference = current_date | minus: product_date
+  assign thirty_days_in_seconds = 2592000
+-%}
+
+<div class="custom-product-card">
+  <div class="custom-product-card__image-wrapper">
+    <a href="{{ product.url | within: collection }}" aria-label="{{ product.title | escape }}">
+      {%- if featured_media != blank -%}
+        <img
+          src="{{ featured_media | image_url: width: 550 }}"
+          alt="{{ featured_media.alt | escape }}"
+          class="primary-image"
+          width="550"
+          height="{{ 550 | divided_by: featured_media.preview_image.aspect_ratio | round }}"
+          loading="lazy"
+        >
+      {%- endif -%}
+      {%- if second_media != blank and second_media != featured_media -%}
+        <img
+          src="{{ second_media | image_url: width: 550 }}"
+          alt="{{ second_media.alt | escape }}"
+          class="secondary-image"
+          width="550"
+          height="{{ 550 | divided_by: second_media.preview_image.aspect_ratio | round }}"
+          loading="lazy"
+        >
+      {%- endif -%}
+    </a>
+
+    <div class="card-overlay">
+      <button type="button" class="quick-view-button button">Quick View</button>
+    </div>
+
+    <div class="card-badges">
+      {%- if product.compare_at_price > product.price -%}
+        <span class="badge sale-badge">Sale</span>
+      {%- endif -%}
+
+      {%- if time_difference < thirty_days_in_seconds -%}
+         <span class="badge new-badge">New</span>
+      {%- endif -%}
+
+      {%- if current_variant.inventory_quantity < 5 and current_variant.inventory_management == 'shopify' and current_variant.inventory_quantity > 0 -%}
+        <span class="badge low-stock-badge">Low Stock</span>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="custom-product-card__info">
+    {%- if show_title -%}
+      <a href="{{ product.url | within: collection }}" class="product-title-link">
+        <h3 class="product-title">{{ product.title | escape }}</h3>
+      </a>
+    {%- endif -%}
+
+    <div class="price-container">
+      {%- if product.compare_at_price > product.price -%}
+        <span class="sale-price">{{ product.price | money }}</span>
+        <s class="original-price">{{ product.compare_at_price | money }}</s>
+      {%- else -%}
+        <span class="regular-price">{{ product.price | money }}</span>
+      {%- endif -%}
+    </div>
+
+    {%- if product.available -%}
+      <form method="post" action="/cart/add" accept-charset="UTF-8" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="{{ current_variant.id }}">
+        <button type="submit" class="add-to-cart-button button button--primary">
+          Add to Cart
+        </button>
+      </form>
+    {%- else -%}
+      <button type="button" class="add-to-cart-button button" disabled>
+        Sold Out
+      </button>
+    {%- endif -%}
+  </div>
+</div>
+
+{% comment %}
+  CSS for the snippet is included in the section file (featured-collection-grid.liquid)
+  to avoid code duplication and improve page performance. This is a best practice.
+{% endcomment %}
+<style>
+  .custom-product-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .custom-product-card:hover {
+    transform: scale(0.98);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .custom-product-card__image-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+  }
+
+  .custom-product-card__image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .custom-product-card .secondary-image {
+    opacity: 0;
+  }
+
+  .custom-product-card:hover .secondary-image {
+    opacity: 1;
+  }
+
+  .card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none; /* Allows clicks to pass through */
+  }
+
+  .custom-product-card:hover .card-overlay {
+    opacity: 1;
+    pointer-events: all; /* Make buttons clickable on hover */
+  }
+
+  .quick-view-button {
+    background-color: white;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+
+  .card-badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 2;
+  }
+
+  .badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+  }
+
+  .sale-badge { background-color: #E74C3C; } /* Red */
+  .new-badge { background-color: #3498DB; } /* Blue */
+  .low-stock-badge { background-color: #F39C12; } /* Orange */
+
+
+  .custom-product-card__info {
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .product-title-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .product-title {
+    font-size: 16px;
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+
+  .price-container {
+    margin-bottom: 15px;
+    flex-grow: 1; /* Pushes button to the bottom */
+  }
+
+  .sale-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #E74C3C;
+    margin-right: 8px;
+  }
+
+  .original-price {
+    font-size: 14px;
+    text-decoration: line-through;
+    color: #7f8c8d;
+  }
+
+  .regular-price {
+    font-size: 16px;
+  }
+
+  .add-to-cart-button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid black;
+    background-color: black;
+    color: white;
+    cursor: pointer;
+    border-radius: 50px;
+    text-transform: uppercase;
+    font-size: 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .add-to-cart-button:hover {
+    background-color: white;
+    color: black;
+  }
+  .add-to-cart-button:disabled {
+    background-color: #bdc3c7;
+    border-color: #bdc3c7;
+    cursor: not-allowed;
+  }
+</style>
