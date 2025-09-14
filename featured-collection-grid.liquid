@@ -10,7 +10,6 @@
   1. LIQUID LOGIC & HTML STRUCTURE
   =====================================================================================
 {% endcomment %}
-
 {%- liquid
   assign collection = collections[section.settings.collection]
   assign products_to_show = section.settings.products_to_show
@@ -35,8 +34,10 @@
       <h2 class="featured-collection-grid__title h2">{{ 'onboarding.collection_title' | t }}</h2>
     {% endif %}
 
+    {% comment %}This is going to hold all our product cards, which will be targeted by the CSS block{% endcomment %}
     <div class="featured-collection-grid__container">
       {%- for product in collection.products limit: products_to_show -%}
+        {% comment %}Reference to the snippet{% endcomment %}
         {% render 'product-card-custom', product: product, show_title: show_title %}
       {%- else -%}
         {%- for i in (1..products_to_show) -%}
@@ -73,6 +74,7 @@
 
   .featured-collection-grid__container {
     display: grid;
+    /* Core logic of the grid system */
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
   }
@@ -124,6 +126,7 @@
 
 {% schema %}
 {
+  // Name of the section as it appears in the theme editor's "Add section" list
   "name": "Featured Collection Grid",
   "tag": "section",
   "class": "section",
@@ -170,7 +173,7 @@
       "default": "9"
     },
     {
-      "type": "range",
+      "type": "range", // Creates a slider
       "id": "padding_top",
       "min": 0,
       "max": 100,
@@ -193,6 +196,7 @@
   "presets": [
     {
       "name": "Featured Collection Grid"
+      // Defines the default configuration for the section when a merchant first adds it. "name" is what appears in the "Add section" list.
     }
   ]
 }
