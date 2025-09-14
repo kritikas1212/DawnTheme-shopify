@@ -9,6 +9,8 @@
 
 {%- liquid
   assign current_variant = product.first_available_variant
+  # product is the object passed from the section. .first_available_variant is a convenient property to get a variant that is currently in stock. We need this to get the price and inventory, and for the 'Add to Cart' form.
+  
   assign featured_media = product.featured_media
   assign second_media = product.media[1]
 
@@ -40,14 +42,18 @@
           height="{{ 550 | divided_by: second_media.preview_image.aspect_ratio | round }}"
           loading="lazy"
         >
+        {% comment %}This is a modern HTML attribute for images that significantly improves page speed.
+        What it does: It tells the browser not to download this image until the user is about to scroll it into view.{% endcomment %}
       {%- endif -%}
     </a>
 
     <div class="card-overlay">
+      {% comment %}A container for the "Quick View" button, used for the CSS hover effect.{% endcomment %}
       <button type="button" class="quick-view-button button">Quick View</button>
     </div>
 
     <div class="card-badges">
+      {% comment %}A container for the 'Sale', 'New', and 'Low Stock' badges.{% endcomment %}
       {%- if product.compare_at_price > product.price -%}
         <span class="badge sale-badge">Sale</span>
       {%- endif -%}
@@ -64,6 +70,7 @@
 
   <div class="custom-product-card__info">
     {%- if show_title -%}
+      {% comment %}Checks the show_title variable that was passed in from the section. The product title inside this block will only render if the merchant checked the box in the theme editor.{% endcomment %}
       <a href="{{ product.url | within: collection }}" class="product-title-link">
         <h3 class="product-title">{{ product.title | escape }}</h3>
       </a>
@@ -72,6 +79,7 @@
     <div class="price-container">
       {%- if product.compare_at_price > product.price -%}
         <span class="sale-price">{{ product.price | money }}</span>
+        {% comment %}strike through effect{% endcomment %}
         <s class="original-price">{{ product.compare_at_price | money }}</s>
       {%- else -%}
         <span class="regular-price">{{ product.price | money }}</span>
